@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기억력 게임 hyen</title>
+    <style>
+        body,h1,p,button{margin: 0; padding: 0;}
+        body{font-family: '맑은 고딕',sans-serif; width: 100%; min-height: 100vh; justify-content: center; align-items: center; background: #f3f4f7; display: flex;}
+        .container{
+        display: flex; flex-direction: column; align-items: center; background: #fff; border-radius: 10px; padding: 20px; 
+        box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.2); width: 90%; max-width: 500px; }
+        h1{margin-bottom: 20px; color: #333; text-align: center;}
+        .info{ display: flex; justify-content: space-between; width: 100%; margin-bottom: 20px; font-size: 18px; }
+        p{margin-bottom: 20px; text-align: center; font-size: 18px; min-height: 24px;}
+        .grid{display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px;}
+        .box{width: 80px; height: 80px; border-radius: 8px; cursor: pointer; opacity: 0.6; transition: all .2s ease;}
+        .box:hover{opacity: 0.8;}
+        .box.active{opacity: 1; transform: scale(1.05); box-shadow: 0 0 15px 0 rgba(255,255,255,0.8);}
+        .box.clicked{animation: pulse .3s ease-in-out;}
+        @keyframes pulse{
+            0%{transform: scale(1); opacity: 0.6;}
+            50%{transform: scale(1.2); opacity: 1;}
+            100%{transform: scale(1); opacity: 0.6;}
+        }
+        button{padding: 10px 20px; background-color: #4285f4; color: #fff; border: 0px none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s;}
+        button:hover{background-color: #3367d7;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>기억력 테스트</h1>
+        <div class="info">
+            <div id="score">점수:0</div>
+            <div id="level">레벨:1</div>
+            <div id="high-scroe">최고 점수:0</div>
+        </div>
+        <p>준비되면 시작 버튼을 누르시오</p>
+        <div class="grid" id="grid">
+
+    </div>
+    <button id="start-btn">게임시작</button>
+    </div>
+    <script>
+        let gameState='ready';    
+        let score=0;
+        let level=1;
+        let highscroe=0;
+        let cumulativePattern=[];
+        let userPattern=[];
+        let currentStep=0;
+
+        const colors=['#ff5252','#448aff','#4caf50','#ffc107','#9c27b0','#ff4091','#3f51b5','#ff9800','#009688'];
+
+        const grid=document.querySelector('#grid');
+        function createGrid(){
+            grid.innerHTML='';
+            for(let i=0; i<9; i++){
+                const box=document.createElement('div');
+                box.className='box';             //class="box"
+                box.style.backgroundColor=colors[i];     //data-index="0~8:
+                box.addEventListener('click',(e)=>{boxClick(i, e)});
+                grid.appendChild(box);
+            }
+        }
+        createGrid();
+        function boxClick(index, event){
+            if(gameState!=='userTurn')return;
+            const boxs=document.querySelectorAll('.box');
+            const clickedBox=boxs[index];
+            clickedBox.classList.add('clicked');
+            setTimeout(()=>{
+                clickedBox.classList.remove('clicked');
+            }, 300);
+            userPattern.push(index);  //console.log(userPattern);
+        }
+        const startBtn=document.querySelector('#start-btn');
+        const message=document.querySelector('p');
+        const scoreArea=document.querySelector('#score');
+        const levelArea=document.querySelector('#level');
+        const highScroeArea=document.querySelector('#high-score');
+        
+        
+        function addNewPattern(){
+            const newStep=Math.floor(Math.random()*9);
+            cumulativePattern.push(newStep);
+            showPattern();
+        }
+        function showPattern(){
+            
+            message.innerHTML='패턴을 기억하세요.';
+            userPatter=[];
+            currentStep=0;
+            const boxs=document.querySelectorAll('.box');
+
+            //cumulativePattern=[0,3,5,3,1,5]
+            let pIdx=0;
+            const interval=setInterval(()=>{
+                for(let j=0; j<9; j++){
+                    boxs[j].classList.remove('active');
+                }
+                if(pIdx<cumulativePattern.length){
+                    boxs[cumulativePattern[pIdx]].classList.add('active');
+                    pIdx++;
+                }else{
+                    for(let k=0; k<9; k++){
+                    boxs[k].classList.remove('active');
+                }
+                    clearInterval(interval);
+                    setInterval(()=>{
+                        gameState='userTurn';
+                        updataMessage();
+                    }, 300)
+                }
+            }, 800);
+        }
+        function updataMessage(){
+            if(gameState==='userTurn'){
+                message.innerHTML=`패턴을 순서대로 클릭하세요 (${currentStep+1} / ${cumulativePattern.length})`;
+            }
+        }
+
+        addNewPattern()
+    </script>
+</body>
+</html>
